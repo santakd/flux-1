@@ -1,16 +1,18 @@
 package http
 
 import (
+	"bytes"
 	"context"
-	"fmt"
+	"crypto/tls"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	fhttp "github.com/influxdata/flux/dependencies/http"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -20,9 +22,9 @@ import (
 )
 
 // http get mirrors the http post originally completed for alerts & notifications
-var get = values.NewFunction(
-	"get",
-	runtime.MustLookupBuiltinType("experimental/http", "get"),
+var request = values.NewFunction(
+	"_request",
+	runtime.MustLookupBuiltinType("experimental/http", "_request"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
 		uV, ok := args.Get("url")
@@ -42,32 +44,57 @@ var get = values.NewFunction(
 			return nil, errors.New(codes.Invalid, "no such host")
 		}
 
-		// http.NewDefaultClient() does default to 30
-		var theTimeout = values.ConvertDurationNsecs(30 * time.Second)
-		tv, ok := args.Get("timeout")
+		methodV, ok := args.Get("method")
 		if !ok {
-			// default timeout
-		} else if tv.Type().Nature() != semantic.Duration {
-			return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", tv, semantic.Int, tv.Type().Nature())
-		} else {
-			theTimeout = tv.Duration()
+			return nil, errors.New(codes.Invalid, "missing \"method\" parameter")
+		}
+		if methodV.Type().Nature() != semantic.String {
+			return nil, errors.Newf(codes.Invalid, "parameter \"method\" is not of type string: %v", methodV.Type())
+		}
+		method := methodV.Str()
+		switch method {
+		case "GET", "POST", "DELETE":
+		default:
+			return nil, errors.Newf(codes.Invalid, "invalid HTTP method %q", method)
+		}
+
+		configV, ok := args.Get("config")
+		if !ok {
+			return nil, errors.New(codes.Invalid, "missing \"config\" parameter")
+		}
+		if configV.Type().Nature() != semantic.Object {
+			return nil, errors.Newf(codes.Invalid, "parameter \"config\" is not of type record: %v", configV.Type())
+		}
+		config := configV.Object()
+
+		var body io.Reader
+		bodyV, ok := args.Get("body")
+		if ok {
+			if bodyV.Type().Nature() != semantic.Bytes {
+				return nil, errors.Newf(codes.Invalid, "parameter \"body\" is not of type bytes: %v", bodyV.Type())
+			}
+			body = bytes.NewReader(bodyV.Bytes())
 		}
 
 		// Construct HTTP request
-		req, err := http.NewRequest("GET", uV.Str(), nil)
+		req, err := http.NewRequestWithContext(ctx, method, uV.Str(), body)
 		if err != nil {
 			return nil, err
 		}
 
 		// Add headers to request
-		header, ok := args.Get("headers")
-		if ok && !header.IsNull() {
+		headersV, ok := args.Get("headers")
+		if ok && !headersV.IsNull() {
+			if headersV.Type().Nature() != semantic.Dictionary {
+				return nil, errors.Newf(codes.Invalid, "parameter \"headers\" is not of type [string:string] : %v", headersV.Type())
+			}
 			var rangeErr error
-			header.Object().Range(func(k string, v values.Value) {
-				if v.Type().Nature() == semantic.String {
-					req.Header.Set(k, v.Str())
+			headersV.Dict().Range(func(k values.Value, v values.Value) {
+				if k.Type().Nature() == semantic.String &&
+					v.Type().Nature() == semantic.String {
+					req.Header.Set(k.Str(), v.Str())
 				} else {
-					rangeErr = errors.Newf(codes.Invalid, "header value %q must be a string", k)
+					rangeErr = errors.Newf(codes.Invalid, "header key and values must be a string: %q", k)
 				}
 			})
 			if rangeErr != nil {
@@ -75,21 +102,45 @@ var get = values.NewFunction(
 			}
 		}
 
-		// Perform request
+		// Get Client and configure it
 		dc, err := deps.HTTPClient()
 		if err != nil {
-			return nil, errors.Wrap(err, codes.Aborted, "missing client in http.get")
+			return nil, errors.Wrap(err, codes.Aborted, "missing client in http.request")
 		}
 
-		statusCode, body, headers, err := func(req *http.Request) (int, []byte, values.Object, error) {
-			s, cctx := opentracing.StartSpanFromContext(ctx, "http.get")
+		timeoutV, ok := config.Get("timeout")
+		if !ok {
+			return nil, errors.New(codes.Invalid, "config is missing \"timeout\" property")
+		}
+		timeout := timeoutV.Duration()
+		if timeout.IsMixed() {
+			return nil, errors.New(codes.Invalid, "config timeout must not be a mixed duration")
+		}
+		dc, err = fhttp.WithTimeout(dc, timeout.Duration())
+		if err != nil {
+			return nil, err
+		}
+
+		verifyTLSV, ok := config.Get("verifyTLS")
+		if !ok {
+			return nil, errors.New(codes.Invalid, "config is missing \"verifyTLS\" property")
+		}
+		if !verifyTLSV.Bool() {
+			dc, err = fhttp.WithTLSConfig(dc, &tls.Config{
+				InsecureSkipVerify: true,
+			})
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		// Do request, using local anonymous functions to facilitate timing the request
+		statusCode, responseBody, headers, err := func(req *http.Request) (int, []byte, values.Dictionary, error) {
+			s, cctx := opentracing.StartSpanFromContext(req.Context(), "http._request")
 			s.SetTag("url", req.URL.String())
 			defer s.Finish()
 
-			ccctx, cncl := context.WithTimeout(cctx, theTimeout.Duration())
-			defer cncl()
-
-			req = req.WithContext(ccctx)
+			req = req.WithContext(cctx)
 			response, err := dc.Do(req)
 			if err != nil {
 				// Alias the DNS lookup error so as not to disclose the
@@ -109,7 +160,11 @@ var get = values.NewFunction(
 				log.Int("statusCode", response.StatusCode),
 				log.Int("responseSize", len(body)),
 			)
-			return response.StatusCode, body, headerToObject(response.Header), nil
+			headers, err := headerToDict(response.Header)
+			if err != nil {
+				return 0, nil, nil, err
+			}
+			return response.StatusCode, body, headers, nil
 		}(req)
 		if err != nil {
 			return nil, err
@@ -118,23 +173,26 @@ var get = values.NewFunction(
 		return values.NewObjectWithValues(map[string]values.Value{
 			"statusCode": values.NewInt(int64(statusCode)),
 			"headers":    headers,
-			"body":       values.NewBytes(body)}), nil
+			"body":       values.NewBytes(responseBody)}), nil
 
 	},
 	true, // get has side-effects
 )
 
-func headerToObject(header http.Header) (headerObj values.Object) {
-	m := make(map[string]values.Value)
+// headerToDict constructs a values.Dictionary from a map of header keys and values.
+func headerToDict(header http.Header) (values.Dictionary, error) {
+	builder := values.NewDictBuilder(semantic.NewDictType(semantic.BasicString, semantic.BasicString))
 	for name, thevalues := range header {
 		for _, onevalue := range thevalues {
-			m[name] = values.New(onevalue)
+			if err := builder.Insert(values.NewString(name), values.NewString(onevalue)); err != nil {
+				return nil, err
+			}
 		}
 	}
-	return values.NewObjectWithValues(m)
+	return builder.Dict(), nil
 }
 
 func init() {
-	runtime.RegisterPackageValue("experimental/http", "get", get)
+	runtime.RegisterPackageValue("experimental/http", "_request", request)
 
 }

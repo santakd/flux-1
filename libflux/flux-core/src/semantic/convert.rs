@@ -361,7 +361,7 @@ fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Ex
         ast::Expression::Duration(lit) => Ok(Expression::Duration(convert_duration_literal(lit, fresher)?)),
         ast::Expression::DateTime(lit) => Ok(Expression::DateTime(convert_date_time_literal(lit, fresher)?)),
         ast::Expression::PipeLit(_) => Err("a pipe literal may only be used as a default value for an argument in a function definition".to_string()),
-        ast::Expression::Bad(_) => Err("BadExpression is not supported in semantic analysis".to_string())
+        ast::Expression::Bad(expr) => Err(format!("encountered bad expression during semantic analysis: {}", expr.base.location).to_string())
     }
 }
 

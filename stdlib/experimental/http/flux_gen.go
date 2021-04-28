@@ -23,31 +23,378 @@ var pkgAST = &ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 12,
-					Line:   5,
+					Column: 2,
+					Line:   53,
 				},
 				File:   "http.flux",
-				Source: "package http\n\n// Get submits an HTTP get request to the specified URL with headers\n// Returns HTTP status code and body as a byte array\nbuiltin get",
+				Source: "package http\n\n_emptyBody = bytes(v: \"\")\n\n// DefaultConfig is the global default for all http requests using the http package.\n// Changing this config will affect all other packages using the http package.\n// To change the config for a single request pass a new config directly into the corresponding function.\noption defaultConfig = {\n    // Timeout on the request, if the timeout is zero no timeout is applied\n    timeout: 0s,\n    // VerifyTLS if false TLS verification will not be performed. This is insecure.\n    verifyTLS: true,\n}\n\n// Internal method used to perform the actual request\nbuiltin _request : (\n    url: string,\n    method: string,\n    config: {A with timeout: duration, verifyTLS: bool},\n    ?headers: [string:string],\n    ?body: bytes,\n) => {\n    statusCode: int,\n    body: bytes,\n    headers: [string:string],\n}\n\n// Make an HTTP request using the provided config\nrequest = (url, method, headers=[:], config=defaultConfig, body=_emptyBody) => _request(\n    url: url,\n    method: method,\n    headers: headers,\n    config: config,\n    body: body,\n)\n\n// Post makes a POST HTTP request\npost = (url, headers=[:], config=defaultConfig, body=_emptyBody) => request(\n    url: url,\n    method: \"POST\",\n    headers: headers,\n    config: config,\n    body: body,\n)\n\n// Get makes a GET HTTP request\nget = (url, headers=[:], config=defaultConfig, body=_emptyBody) => request(\n    url: url,\n    method: \"GET\",\n    headers: headers,\n    config: config,\n    body: body,\n)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body: []ast.Statement{&ast.BuiltinStatement{
+		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Get submits an HTTP get request to the specified URL with headers\n"}, ast.Comment{Text: "// Returns HTTP status code and body as a byte array\n"}},
+				Comments: nil,
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 12,
-						Line:   5,
+						Column: 26,
+						Line:   3,
 					},
 					File:   "http.flux",
-					Source: "builtin get",
+					Source: "_emptyBody = bytes(v: \"\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   3,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   3,
+						},
+						File:   "http.flux",
+						Source: "_emptyBody",
+						Start: ast.Position{
+							Column: 1,
+							Line:   3,
+						},
+					},
+				},
+				Name: "_emptyBody",
+			},
+			Init: &ast.CallExpression{
+				Arguments: []ast.Expression{&ast.ObjectExpression{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   3,
+							},
+							File:   "http.flux",
+							Source: "v: \"\"",
+							Start: ast.Position{
+								Column: 20,
+								Line:   3,
+							},
+						},
+					},
+					Lbrace: nil,
+					Properties: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   3,
+								},
+								File:   "http.flux",
+								Source: "v: \"\"",
+								Start: ast.Position{
+									Column: 20,
+									Line:   3,
+								},
+							},
+						},
+						Comma: nil,
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   3,
+									},
+									File:   "http.flux",
+									Source: "v",
+									Start: ast.Position{
+										Column: 20,
+										Line:   3,
+									},
+								},
+							},
+							Name: "v",
+						},
+						Separator: nil,
+						Value: &ast.StringLiteral{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   3,
+									},
+									File:   "http.flux",
+									Source: "\"\"",
+									Start: ast.Position{
+										Column: 23,
+										Line:   3,
+									},
+								},
+							},
+							Value: "",
+						},
+					}},
+					Rbrace: nil,
+					With:   nil,
+				}},
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   3,
+						},
+						File:   "http.flux",
+						Source: "bytes(v: \"\")",
+						Start: ast.Position{
+							Column: 14,
+							Line:   3,
+						},
+					},
+				},
+				Callee: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   3,
+							},
+							File:   "http.flux",
+							Source: "bytes",
+							Start: ast.Position{
+								Column: 14,
+								Line:   3,
+							},
+						},
+					},
+					Name: "bytes",
+				},
+				Lparen: nil,
+				Rparen: nil,
+			},
+		}, &ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   13,
+						},
+						File:   "http.flux",
+						Source: "defaultConfig = {\n    // Timeout on the request, if the timeout is zero no timeout is applied\n    timeout: 0s,\n    // VerifyTLS if false TLS verification will not be performed. This is insecure.\n    verifyTLS: true,\n}",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 21,
+								Line:   8,
+							},
+							File:   "http.flux",
+							Source: "defaultConfig",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Name: "defaultConfig",
+				},
+				Init: &ast.ObjectExpression{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   13,
+							},
+							File:   "http.flux",
+							Source: "{\n    // Timeout on the request, if the timeout is zero no timeout is applied\n    timeout: 0s,\n    // VerifyTLS if false TLS verification will not be performed. This is insecure.\n    verifyTLS: true,\n}",
+							Start: ast.Position{
+								Column: 24,
+								Line:   8,
+							},
+						},
+					},
+					Lbrace: nil,
+					Properties: []*ast.Property{&ast.Property{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   10,
+								},
+								File:   "http.flux",
+								Source: "timeout: 0s",
+								Start: ast.Position{
+									Column: 5,
+									Line:   10,
+								},
+							},
+						},
+						Comma: nil,
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: []ast.Comment{ast.Comment{Text: "// Timeout on the request, if the timeout is zero no timeout is applied\n"}},
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   10,
+									},
+									File:   "http.flux",
+									Source: "timeout",
+									Start: ast.Position{
+										Column: 5,
+										Line:   10,
+									},
+								},
+							},
+							Name: "timeout",
+						},
+						Separator: nil,
+						Value: &ast.DurationLiteral{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 16,
+										Line:   10,
+									},
+									File:   "http.flux",
+									Source: "0s",
+									Start: ast.Position{
+										Column: 14,
+										Line:   10,
+									},
+								},
+							},
+							Values: []ast.Duration{ast.Duration{
+								Magnitude: int64(0),
+								Unit:      "s",
+							}},
+						},
+					}, &ast.Property{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   12,
+								},
+								File:   "http.flux",
+								Source: "verifyTLS: true",
+								Start: ast.Position{
+									Column: 5,
+									Line:   12,
+								},
+							},
+						},
+						Comma: nil,
+						Key: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: []ast.Comment{ast.Comment{Text: "// VerifyTLS if false TLS verification will not be performed. This is insecure.\n"}},
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 14,
+										Line:   12,
+									},
+									File:   "http.flux",
+									Source: "verifyTLS",
+									Start: ast.Position{
+										Column: 5,
+										Line:   12,
+									},
+								},
+							},
+							Name: "verifyTLS",
+						},
+						Separator: nil,
+						Value: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   12,
+									},
+									File:   "http.flux",
+									Source: "true",
+									Start: ast.Position{
+										Column: 16,
+										Line:   12,
+									},
+								},
+							},
+							Name: "true",
+						},
+					}},
+					Rbrace: nil,
+					With:   nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Comments: []ast.Comment{ast.Comment{Text: "// DefaultConfig is the global default for all http requests using the http package.\n"}, ast.Comment{Text: "// Changing this config will affect all other packages using the http package.\n"}, ast.Comment{Text: "// To change the config for a single request pass a new config directly into the corresponding function.\n"}},
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   13,
+					},
+					File:   "http.flux",
+					Source: "option defaultConfig = {\n    // Timeout on the request, if the timeout is zero no timeout is applied\n    timeout: 0s,\n    // VerifyTLS if false TLS verification will not be performed. This is insecure.\n    verifyTLS: true,\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Comments: []ast.Comment{ast.Comment{Text: "// Internal method used to perform the actual request\n"}},
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   16,
+					},
+					File:   "http.flux",
+					Source: "builtin _request",
+					Start: ast.Position{
+						Column: 1,
+						Line:   16,
 					},
 				},
 			},
@@ -58,18 +405,18 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 12,
-							Line:   5,
+							Column: 17,
+							Line:   16,
 						},
 						File:   "http.flux",
-						Source: "get",
+						Source: "_request",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   16,
 						},
 					},
 				},
-				Name: "get",
+				Name: "_request",
 			},
 			Ty: ast.TypeExpression{
 				BaseNode: ast.BaseNode{
@@ -77,142 +424,32 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 136,
-							Line:   5,
+							Column: 2,
+							Line:   26,
 						},
 						File:   "http.flux",
-						Source: "(url: string, ?headers: A, ?timeout: duration) => {statusCode: int , body: bytes , headers: B} where A: Record, B: Record",
+						Source: "(\n    url: string,\n    method: string,\n    config: {A with timeout: duration, verifyTLS: bool},\n    ?headers: [string:string],\n    ?body: bytes,\n) => {\n    statusCode: int,\n    body: bytes,\n    headers: [string:string],\n}",
 						Start: ast.Position{
-							Column: 15,
-							Line:   5,
+							Column: 20,
+							Line:   16,
 						},
 					},
 				},
-				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 125,
-								Line:   5,
-							},
-							File:   "http.flux",
-							Source: "A: Record",
-							Start: ast.Position{
-								Column: 116,
-								Line:   5,
-							},
-						},
-					},
-					Kinds: []*ast.Identifier{&ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 125,
-									Line:   5,
-								},
-								File:   "http.flux",
-								Source: "Record",
-								Start: ast.Position{
-									Column: 119,
-									Line:   5,
-								},
-							},
-						},
-						Name: "Record",
-					}},
-					Tvar: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 117,
-									Line:   5,
-								},
-								File:   "http.flux",
-								Source: "A",
-								Start: ast.Position{
-									Column: 116,
-									Line:   5,
-								},
-							},
-						},
-						Name: "A",
-					},
-				}, &ast.TypeConstraint{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 136,
-								Line:   5,
-							},
-							File:   "http.flux",
-							Source: "B: Record",
-							Start: ast.Position{
-								Column: 127,
-								Line:   5,
-							},
-						},
-					},
-					Kinds: []*ast.Identifier{&ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 136,
-									Line:   5,
-								},
-								File:   "http.flux",
-								Source: "Record",
-								Start: ast.Position{
-									Column: 130,
-									Line:   5,
-								},
-							},
-						},
-						Name: "Record",
-					}},
-					Tvar: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 128,
-									Line:   5,
-								},
-								File:   "http.flux",
-								Source: "B",
-								Start: ast.Position{
-									Column: 127,
-									Line:   5,
-								},
-							},
-						},
-						Name: "B",
-					},
-				}},
+				Constraints: []*ast.TypeConstraint{},
 				Ty: &ast.FunctionType{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 109,
-								Line:   5,
+								Column: 2,
+								Line:   26,
 							},
 							File:   "http.flux",
-							Source: "(url: string, ?headers: A, ?timeout: duration) => {statusCode: int , body: bytes , headers: B}",
+							Source: "(\n    url: string,\n    method: string,\n    config: {A with timeout: duration, verifyTLS: bool},\n    ?headers: [string:string],\n    ?body: bytes,\n) => {\n    statusCode: int,\n    body: bytes,\n    headers: [string:string],\n}",
 							Start: ast.Position{
-								Column: 15,
-								Line:   5,
+								Column: 20,
+								Line:   16,
 							},
 						},
 					},
@@ -222,14 +459,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 27,
-									Line:   5,
+									Column: 16,
+									Line:   17,
 								},
 								File:   "http.flux",
 								Source: "url: string",
 								Start: ast.Position{
-									Column: 16,
-									Line:   5,
+									Column: 5,
+									Line:   17,
 								},
 							},
 						},
@@ -240,14 +477,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   5,
+										Column: 8,
+										Line:   17,
 									},
 									File:   "http.flux",
 									Source: "url",
 									Start: ast.Position{
-										Column: 16,
-										Line:   5,
+										Column: 5,
+										Line:   17,
 									},
 								},
 							},
@@ -259,14 +496,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 27,
-										Line:   5,
+										Column: 16,
+										Line:   17,
 									},
 									File:   "http.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 21,
-										Line:   5,
+										Column: 10,
+										Line:   17,
 									},
 								},
 							},
@@ -276,14 +513,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   5,
+											Column: 16,
+											Line:   17,
 										},
 										File:   "http.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 21,
-											Line:   5,
+											Column: 10,
+											Line:   17,
 										},
 									},
 								},
@@ -296,51 +533,51 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 40,
-									Line:   5,
+									Column: 19,
+									Line:   18,
 								},
 								File:   "http.flux",
-								Source: "?headers: A",
+								Source: "method: string",
 								Start: ast.Position{
-									Column: 29,
-									Line:   5,
+									Column: 5,
+									Line:   18,
 								},
 							},
 						},
-						Kind: "Optional",
+						Kind: "Required",
 						Name: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 37,
-										Line:   5,
+										Column: 11,
+										Line:   18,
 									},
 									File:   "http.flux",
-									Source: "headers",
+									Source: "method",
 									Start: ast.Position{
-										Column: 30,
-										Line:   5,
+										Column: 5,
+										Line:   18,
 									},
 								},
 							},
-							Name: "headers",
+							Name: "method",
 						},
-						Ty: &ast.TvarType{
+						Ty: &ast.NamedType{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 40,
-										Line:   5,
+										Column: 19,
+										Line:   18,
 									},
 									File:   "http.flux",
-									Source: "A",
+									Source: "string",
 									Start: ast.Position{
-										Column: 39,
-										Line:   5,
+										Column: 13,
+										Line:   18,
 									},
 								},
 							},
@@ -350,14 +587,235 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
+											Column: 19,
+											Line:   18,
+										},
+										File:   "http.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 13,
+											Line:   18,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 56,
+									Line:   19,
+								},
+								File:   "http.flux",
+								Source: "config: {A with timeout: duration, verifyTLS: bool}",
+								Start: ast.Position{
+									Column: 5,
+									Line:   19,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 11,
+										Line:   19,
+									},
+									File:   "http.flux",
+									Source: "config",
+									Start: ast.Position{
+										Column: 5,
+										Line:   19,
+									},
+								},
+							},
+							Name: "config",
+						},
+						Ty: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 56,
+										Line:   19,
+									},
+									File:   "http.flux",
+									Source: "{A with timeout: duration, verifyTLS: bool}",
+									Start: ast.Position{
+										Column: 13,
+										Line:   19,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   19,
+										},
+										File:   "http.flux",
+										Source: "timeout: duration",
+										Start: ast.Position{
+											Column: 21,
+											Line:   19,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   19,
+											},
+											File:   "http.flux",
+											Source: "timeout",
+											Start: ast.Position{
+												Column: 21,
+												Line:   19,
+											},
+										},
+									},
+									Name: "timeout",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   19,
+											},
+											File:   "http.flux",
+											Source: "duration",
+											Start: ast.Position{
+												Column: 30,
+												Line:   19,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 38,
+													Line:   19,
+												},
+												File:   "http.flux",
+												Source: "duration",
+												Start: ast.Position{
+													Column: 30,
+													Line:   19,
+												},
+											},
+										},
+										Name: "duration",
+									},
+								},
+							}, &ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 55,
+											Line:   19,
+										},
+										File:   "http.flux",
+										Source: "verifyTLS: bool",
+										Start: ast.Position{
 											Column: 40,
-											Line:   5,
+											Line:   19,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   19,
+											},
+											File:   "http.flux",
+											Source: "verifyTLS",
+											Start: ast.Position{
+												Column: 40,
+												Line:   19,
+											},
+										},
+									},
+									Name: "verifyTLS",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 55,
+												Line:   19,
+											},
+											File:   "http.flux",
+											Source: "bool",
+											Start: ast.Position{
+												Column: 51,
+												Line:   19,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 55,
+													Line:   19,
+												},
+												File:   "http.flux",
+												Source: "bool",
+												Start: ast.Position{
+													Column: 51,
+													Line:   19,
+												},
+											},
+										},
+										Name: "bool",
+									},
+								},
+							}},
+							Tvar: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   19,
 										},
 										File:   "http.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 39,
-											Line:   5,
+											Column: 14,
+											Line:   19,
 										},
 									},
 								},
@@ -370,14 +828,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 60,
-									Line:   5,
+									Column: 30,
+									Line:   20,
 								},
 								File:   "http.flux",
-								Source: "?timeout: duration",
+								Source: "?headers: [string:string]",
 								Start: ast.Position{
-									Column: 42,
-									Line:   5,
+									Column: 5,
+									Line:   20,
 								},
 							},
 						},
@@ -388,18 +846,147 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 50,
-										Line:   5,
+										Column: 13,
+										Line:   20,
 									},
 									File:   "http.flux",
-									Source: "timeout",
+									Source: "headers",
 									Start: ast.Position{
-										Column: 43,
-										Line:   5,
+										Column: 6,
+										Line:   20,
 									},
 								},
 							},
-							Name: "timeout",
+							Name: "headers",
+						},
+						Ty: &ast.DictType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 30,
+										Line:   20,
+									},
+									File:   "http.flux",
+									Source: "[string:string]",
+									Start: ast.Position{
+										Column: 15,
+										Line:   20,
+									},
+								},
+							},
+							KeyType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 22,
+											Line:   20,
+										},
+										File:   "http.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 16,
+											Line:   20,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   20,
+											},
+											File:   "http.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 16,
+												Line:   20,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+							ValueType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 29,
+											Line:   20,
+										},
+										File:   "http.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 23,
+											Line:   20,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   20,
+											},
+											File:   "http.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 23,
+												Line:   20,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   21,
+								},
+								File:   "http.flux",
+								Source: "?body: bytes",
+								Start: ast.Position{
+									Column: 5,
+									Line:   21,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   21,
+									},
+									File:   "http.flux",
+									Source: "body",
+									Start: ast.Position{
+										Column: 6,
+										Line:   21,
+									},
+								},
+							},
+							Name: "body",
 						},
 						Ty: &ast.NamedType{
 							BaseNode: ast.BaseNode{
@@ -407,14 +994,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 60,
-										Line:   5,
+										Column: 17,
+										Line:   21,
 									},
 									File:   "http.flux",
-									Source: "duration",
+									Source: "bytes",
 									Start: ast.Position{
-										Column: 52,
-										Line:   5,
+										Column: 12,
+										Line:   21,
 									},
 								},
 							},
@@ -424,18 +1011,18 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 60,
-											Line:   5,
+											Column: 17,
+											Line:   21,
 										},
 										File:   "http.flux",
-										Source: "duration",
+										Source: "bytes",
 										Start: ast.Position{
-											Column: 52,
-											Line:   5,
+											Column: 12,
+											Line:   21,
 										},
 									},
 								},
-								Name: "duration",
+								Name: "bytes",
 							},
 						},
 					}},
@@ -445,14 +1032,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 109,
-									Line:   5,
+									Column: 2,
+									Line:   26,
 								},
 								File:   "http.flux",
-								Source: "{statusCode: int , body: bytes , headers: B}",
+								Source: "{\n    statusCode: int,\n    body: bytes,\n    headers: [string:string],\n}",
 								Start: ast.Position{
-									Column: 65,
-									Line:   5,
+									Column: 6,
+									Line:   22,
 								},
 							},
 						},
@@ -462,14 +1049,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 81,
-										Line:   5,
+										Column: 20,
+										Line:   23,
 									},
 									File:   "http.flux",
 									Source: "statusCode: int",
 									Start: ast.Position{
-										Column: 66,
-										Line:   5,
+										Column: 5,
+										Line:   23,
 									},
 								},
 							},
@@ -479,14 +1066,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 76,
-											Line:   5,
+											Column: 15,
+											Line:   23,
 										},
 										File:   "http.flux",
 										Source: "statusCode",
 										Start: ast.Position{
-											Column: 66,
-											Line:   5,
+											Column: 5,
+											Line:   23,
 										},
 									},
 								},
@@ -498,14 +1085,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 81,
-											Line:   5,
+											Column: 20,
+											Line:   23,
 										},
 										File:   "http.flux",
 										Source: "int",
 										Start: ast.Position{
-											Column: 78,
-											Line:   5,
+											Column: 17,
+											Line:   23,
 										},
 									},
 								},
@@ -515,14 +1102,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 81,
-												Line:   5,
+												Column: 20,
+												Line:   23,
 											},
 											File:   "http.flux",
 											Source: "int",
 											Start: ast.Position{
-												Column: 78,
-												Line:   5,
+												Column: 17,
+												Line:   23,
 											},
 										},
 									},
@@ -535,14 +1122,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 95,
-										Line:   5,
+										Column: 16,
+										Line:   24,
 									},
 									File:   "http.flux",
 									Source: "body: bytes",
 									Start: ast.Position{
-										Column: 84,
-										Line:   5,
+										Column: 5,
+										Line:   24,
 									},
 								},
 							},
@@ -552,14 +1139,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 88,
-											Line:   5,
+											Column: 9,
+											Line:   24,
 										},
 										File:   "http.flux",
 										Source: "body",
 										Start: ast.Position{
-											Column: 84,
-											Line:   5,
+											Column: 5,
+											Line:   24,
 										},
 									},
 								},
@@ -571,14 +1158,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 95,
-											Line:   5,
+											Column: 16,
+											Line:   24,
 										},
 										File:   "http.flux",
 										Source: "bytes",
 										Start: ast.Position{
-											Column: 90,
-											Line:   5,
+											Column: 11,
+											Line:   24,
 										},
 									},
 								},
@@ -588,14 +1175,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 95,
-												Line:   5,
+												Column: 16,
+												Line:   24,
 											},
 											File:   "http.flux",
 											Source: "bytes",
 											Start: ast.Position{
-												Column: 90,
-												Line:   5,
+												Column: 11,
+												Line:   24,
 											},
 										},
 									},
@@ -608,14 +1195,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 108,
-										Line:   5,
+										Column: 29,
+										Line:   25,
 									},
 									File:   "http.flux",
-									Source: "headers: B",
+									Source: "headers: [string:string]",
 									Start: ast.Position{
-										Column: 98,
-										Line:   5,
+										Column: 5,
+										Line:   25,
 									},
 								},
 							},
@@ -625,60 +1212,2002 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 105,
-											Line:   5,
+											Column: 12,
+											Line:   25,
 										},
 										File:   "http.flux",
 										Source: "headers",
 										Start: ast.Position{
-											Column: 98,
-											Line:   5,
+											Column: 5,
+											Line:   25,
 										},
 									},
 								},
 								Name: "headers",
 							},
-							Ty: &ast.TvarType{
+							Ty: &ast.DictType{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 108,
-											Line:   5,
+											Column: 29,
+											Line:   25,
 										},
 										File:   "http.flux",
-										Source: "B",
+										Source: "[string:string]",
 										Start: ast.Position{
-											Column: 107,
-											Line:   5,
+											Column: 14,
+											Line:   25,
 										},
 									},
 								},
-								ID: &ast.Identifier{
+								KeyType: &ast.NamedType{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 108,
-												Line:   5,
+												Column: 21,
+												Line:   25,
 											},
 											File:   "http.flux",
-											Source: "B",
+											Source: "string",
 											Start: ast.Position{
-												Column: 107,
-												Line:   5,
+												Column: 15,
+												Line:   25,
 											},
 										},
 									},
-									Name: "B",
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 21,
+													Line:   25,
+												},
+												File:   "http.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 15,
+													Line:   25,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+								ValueType: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 28,
+												Line:   25,
+											},
+											File:   "http.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 22,
+												Line:   25,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 28,
+													Line:   25,
+												},
+												File:   "http.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 22,
+													Line:   25,
+												},
+											},
+										},
+										Name: "string",
+									},
 								},
 							},
 						}},
 						Tvar: nil,
 					},
 				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   35,
+					},
+					File:   "http.flux",
+					Source: "request = (url, method, headers=[:], config=defaultConfig, body=_emptyBody) => _request(\n    url: url,\n    method: method,\n    headers: headers,\n    config: config,\n    body: body,\n)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   29,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// Make an HTTP request using the provided config\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   29,
+						},
+						File:   "http.flux",
+						Source: "request",
+						Start: ast.Position{
+							Column: 1,
+							Line:   29,
+						},
+					},
+				},
+				Name: "request",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   35,
+						},
+						File:   "http.flux",
+						Source: "(url, method, headers=[:], config=defaultConfig, body=_emptyBody) => _request(\n    url: url,\n    method: method,\n    headers: headers,\n    config: config,\n    body: body,\n)",
+						Start: ast.Position{
+							Column: 11,
+							Line:   29,
+						},
+					},
+				},
+				Body: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   34,
+								},
+								File:   "http.flux",
+								Source: "url: url,\n    method: method,\n    headers: headers,\n    config: config,\n    body: body",
+								Start: ast.Position{
+									Column: 5,
+									Line:   30,
+								},
+							},
+						},
+						Lbrace: nil,
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 13,
+										Line:   30,
+									},
+									File:   "http.flux",
+									Source: "url: url",
+									Start: ast.Position{
+										Column: 5,
+										Line:   30,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   30,
+										},
+										File:   "http.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 5,
+											Line:   30,
+										},
+									},
+								},
+								Name: "url",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   30,
+										},
+										File:   "http.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 10,
+											Line:   30,
+										},
+									},
+								},
+								Name: "url",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   31,
+									},
+									File:   "http.flux",
+									Source: "method: method",
+									Start: ast.Position{
+										Column: 5,
+										Line:   31,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   31,
+										},
+										File:   "http.flux",
+										Source: "method",
+										Start: ast.Position{
+											Column: 5,
+											Line:   31,
+										},
+									},
+								},
+								Name: "method",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   31,
+										},
+										File:   "http.flux",
+										Source: "method",
+										Start: ast.Position{
+											Column: 13,
+											Line:   31,
+										},
+									},
+								},
+								Name: "method",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   32,
+									},
+									File:   "http.flux",
+									Source: "headers: headers",
+									Start: ast.Position{
+										Column: 5,
+										Line:   32,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 12,
+											Line:   32,
+										},
+										File:   "http.flux",
+										Source: "headers",
+										Start: ast.Position{
+											Column: 5,
+											Line:   32,
+										},
+									},
+								},
+								Name: "headers",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   32,
+										},
+										File:   "http.flux",
+										Source: "headers",
+										Start: ast.Position{
+											Column: 14,
+											Line:   32,
+										},
+									},
+								},
+								Name: "headers",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   33,
+									},
+									File:   "http.flux",
+									Source: "config: config",
+									Start: ast.Position{
+										Column: 5,
+										Line:   33,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   33,
+										},
+										File:   "http.flux",
+										Source: "config",
+										Start: ast.Position{
+											Column: 5,
+											Line:   33,
+										},
+									},
+								},
+								Name: "config",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   33,
+										},
+										File:   "http.flux",
+										Source: "config",
+										Start: ast.Position{
+											Column: 13,
+											Line:   33,
+										},
+									},
+								},
+								Name: "config",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   34,
+									},
+									File:   "http.flux",
+									Source: "body: body",
+									Start: ast.Position{
+										Column: 5,
+										Line:   34,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 9,
+											Line:   34,
+										},
+										File:   "http.flux",
+										Source: "body",
+										Start: ast.Position{
+											Column: 5,
+											Line:   34,
+										},
+									},
+								},
+								Name: "body",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   34,
+										},
+										File:   "http.flux",
+										Source: "body",
+										Start: ast.Position{
+											Column: 11,
+											Line:   34,
+										},
+									},
+								},
+								Name: "body",
+							},
+						}},
+						Rbrace: nil,
+						With:   nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   35,
+							},
+							File:   "http.flux",
+							Source: "_request(\n    url: url,\n    method: method,\n    headers: headers,\n    config: config,\n    body: body,\n)",
+							Start: ast.Position{
+								Column: 80,
+								Line:   29,
+							},
+						},
+					},
+					Callee: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 88,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "_request",
+								Start: ast.Position{
+									Column: 80,
+									Line:   29,
+								},
+							},
+						},
+						Name: "_request",
+					},
+					Lparen: nil,
+					Rparen: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 15,
+								Line:   29,
+							},
+							File:   "http.flux",
+							Source: "url",
+							Start: ast.Position{
+								Column: 12,
+								Line:   29,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "url",
+								Start: ast.Position{
+									Column: 12,
+									Line:   29,
+								},
+							},
+						},
+						Name: "url",
+					},
+					Separator: nil,
+					Value:     nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   29,
+							},
+							File:   "http.flux",
+							Source: "method",
+							Start: ast.Position{
+								Column: 17,
+								Line:   29,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "method",
+								Start: ast.Position{
+									Column: 17,
+									Line:   29,
+								},
+							},
+						},
+						Name: "method",
+					},
+					Separator: nil,
+					Value:     nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   29,
+							},
+							File:   "http.flux",
+							Source: "headers=[:]",
+							Start: ast.Position{
+								Column: 25,
+								Line:   29,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "headers",
+								Start: ast.Position{
+									Column: 25,
+									Line:   29,
+								},
+							},
+						},
+						Name: "headers",
+					},
+					Separator: nil,
+					Value: &ast.DictExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "[:]",
+								Start: ast.Position{
+									Column: 33,
+									Line:   29,
+								},
+							},
+						},
+						Elements: []*ast.DictItem{},
+						Lbrack:   nil,
+						Rbrack:   nil,
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 58,
+								Line:   29,
+							},
+							File:   "http.flux",
+							Source: "config=defaultConfig",
+							Start: ast.Position{
+								Column: 38,
+								Line:   29,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 44,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "config",
+								Start: ast.Position{
+									Column: 38,
+									Line:   29,
+								},
+							},
+						},
+						Name: "config",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 58,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "defaultConfig",
+								Start: ast.Position{
+									Column: 45,
+									Line:   29,
+								},
+							},
+						},
+						Name: "defaultConfig",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 75,
+								Line:   29,
+							},
+							File:   "http.flux",
+							Source: "body=_emptyBody",
+							Start: ast.Position{
+								Column: 60,
+								Line:   29,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 64,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "body",
+								Start: ast.Position{
+									Column: 60,
+									Line:   29,
+								},
+							},
+						},
+						Name: "body",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 75,
+									Line:   29,
+								},
+								File:   "http.flux",
+								Source: "_emptyBody",
+								Start: ast.Position{
+									Column: 65,
+									Line:   29,
+								},
+							},
+						},
+						Name: "_emptyBody",
+					},
+				}},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   44,
+					},
+					File:   "http.flux",
+					Source: "post = (url, headers=[:], config=defaultConfig, body=_emptyBody) => request(\n    url: url,\n    method: \"POST\",\n    headers: headers,\n    config: config,\n    body: body,\n)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   38,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// Post makes a POST HTTP request\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   38,
+						},
+						File:   "http.flux",
+						Source: "post",
+						Start: ast.Position{
+							Column: 1,
+							Line:   38,
+						},
+					},
+				},
+				Name: "post",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   44,
+						},
+						File:   "http.flux",
+						Source: "(url, headers=[:], config=defaultConfig, body=_emptyBody) => request(\n    url: url,\n    method: \"POST\",\n    headers: headers,\n    config: config,\n    body: body,\n)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   38,
+						},
+					},
+				},
+				Body: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   43,
+								},
+								File:   "http.flux",
+								Source: "url: url,\n    method: \"POST\",\n    headers: headers,\n    config: config,\n    body: body",
+								Start: ast.Position{
+									Column: 5,
+									Line:   39,
+								},
+							},
+						},
+						Lbrace: nil,
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 13,
+										Line:   39,
+									},
+									File:   "http.flux",
+									Source: "url: url",
+									Start: ast.Position{
+										Column: 5,
+										Line:   39,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   39,
+										},
+										File:   "http.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 5,
+											Line:   39,
+										},
+									},
+								},
+								Name: "url",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   39,
+										},
+										File:   "http.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 10,
+											Line:   39,
+										},
+									},
+								},
+								Name: "url",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   40,
+									},
+									File:   "http.flux",
+									Source: "method: \"POST\"",
+									Start: ast.Position{
+										Column: 5,
+										Line:   40,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   40,
+										},
+										File:   "http.flux",
+										Source: "method",
+										Start: ast.Position{
+											Column: 5,
+											Line:   40,
+										},
+									},
+								},
+								Name: "method",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   40,
+										},
+										File:   "http.flux",
+										Source: "\"POST\"",
+										Start: ast.Position{
+											Column: 13,
+											Line:   40,
+										},
+									},
+								},
+								Value: "POST",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   41,
+									},
+									File:   "http.flux",
+									Source: "headers: headers",
+									Start: ast.Position{
+										Column: 5,
+										Line:   41,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 12,
+											Line:   41,
+										},
+										File:   "http.flux",
+										Source: "headers",
+										Start: ast.Position{
+											Column: 5,
+											Line:   41,
+										},
+									},
+								},
+								Name: "headers",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   41,
+										},
+										File:   "http.flux",
+										Source: "headers",
+										Start: ast.Position{
+											Column: 14,
+											Line:   41,
+										},
+									},
+								},
+								Name: "headers",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   42,
+									},
+									File:   "http.flux",
+									Source: "config: config",
+									Start: ast.Position{
+										Column: 5,
+										Line:   42,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   42,
+										},
+										File:   "http.flux",
+										Source: "config",
+										Start: ast.Position{
+											Column: 5,
+											Line:   42,
+										},
+									},
+								},
+								Name: "config",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   42,
+										},
+										File:   "http.flux",
+										Source: "config",
+										Start: ast.Position{
+											Column: 13,
+											Line:   42,
+										},
+									},
+								},
+								Name: "config",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   43,
+									},
+									File:   "http.flux",
+									Source: "body: body",
+									Start: ast.Position{
+										Column: 5,
+										Line:   43,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 9,
+											Line:   43,
+										},
+										File:   "http.flux",
+										Source: "body",
+										Start: ast.Position{
+											Column: 5,
+											Line:   43,
+										},
+									},
+								},
+								Name: "body",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   43,
+										},
+										File:   "http.flux",
+										Source: "body",
+										Start: ast.Position{
+											Column: 11,
+											Line:   43,
+										},
+									},
+								},
+								Name: "body",
+							},
+						}},
+						Rbrace: nil,
+						With:   nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   44,
+							},
+							File:   "http.flux",
+							Source: "request(\n    url: url,\n    method: \"POST\",\n    headers: headers,\n    config: config,\n    body: body,\n)",
+							Start: ast.Position{
+								Column: 69,
+								Line:   38,
+							},
+						},
+					},
+					Callee: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 76,
+									Line:   38,
+								},
+								File:   "http.flux",
+								Source: "request",
+								Start: ast.Position{
+									Column: 69,
+									Line:   38,
+								},
+							},
+						},
+						Name: "request",
+					},
+					Lparen: nil,
+					Rparen: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 12,
+								Line:   38,
+							},
+							File:   "http.flux",
+							Source: "url",
+							Start: ast.Position{
+								Column: 9,
+								Line:   38,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   38,
+								},
+								File:   "http.flux",
+								Source: "url",
+								Start: ast.Position{
+									Column: 9,
+									Line:   38,
+								},
+							},
+						},
+						Name: "url",
+					},
+					Separator: nil,
+					Value:     nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   38,
+							},
+							File:   "http.flux",
+							Source: "headers=[:]",
+							Start: ast.Position{
+								Column: 14,
+								Line:   38,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   38,
+								},
+								File:   "http.flux",
+								Source: "headers",
+								Start: ast.Position{
+									Column: 14,
+									Line:   38,
+								},
+							},
+						},
+						Name: "headers",
+					},
+					Separator: nil,
+					Value: &ast.DictExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   38,
+								},
+								File:   "http.flux",
+								Source: "[:]",
+								Start: ast.Position{
+									Column: 22,
+									Line:   38,
+								},
+							},
+						},
+						Elements: []*ast.DictItem{},
+						Lbrack:   nil,
+						Rbrack:   nil,
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 47,
+								Line:   38,
+							},
+							File:   "http.flux",
+							Source: "config=defaultConfig",
+							Start: ast.Position{
+								Column: 27,
+								Line:   38,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 33,
+									Line:   38,
+								},
+								File:   "http.flux",
+								Source: "config",
+								Start: ast.Position{
+									Column: 27,
+									Line:   38,
+								},
+							},
+						},
+						Name: "config",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 47,
+									Line:   38,
+								},
+								File:   "http.flux",
+								Source: "defaultConfig",
+								Start: ast.Position{
+									Column: 34,
+									Line:   38,
+								},
+							},
+						},
+						Name: "defaultConfig",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 64,
+								Line:   38,
+							},
+							File:   "http.flux",
+							Source: "body=_emptyBody",
+							Start: ast.Position{
+								Column: 49,
+								Line:   38,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 53,
+									Line:   38,
+								},
+								File:   "http.flux",
+								Source: "body",
+								Start: ast.Position{
+									Column: 49,
+									Line:   38,
+								},
+							},
+						},
+						Name: "body",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 64,
+									Line:   38,
+								},
+								File:   "http.flux",
+								Source: "_emptyBody",
+								Start: ast.Position{
+									Column: 54,
+									Line:   38,
+								},
+							},
+						},
+						Name: "_emptyBody",
+					},
+				}},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   53,
+					},
+					File:   "http.flux",
+					Source: "get = (url, headers=[:], config=defaultConfig, body=_emptyBody) => request(\n    url: url,\n    method: \"GET\",\n    headers: headers,\n    config: config,\n    body: body,\n)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   47,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// Get makes a GET HTTP request\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 4,
+							Line:   47,
+						},
+						File:   "http.flux",
+						Source: "get",
+						Start: ast.Position{
+							Column: 1,
+							Line:   47,
+						},
+					},
+				},
+				Name: "get",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   53,
+						},
+						File:   "http.flux",
+						Source: "(url, headers=[:], config=defaultConfig, body=_emptyBody) => request(\n    url: url,\n    method: \"GET\",\n    headers: headers,\n    config: config,\n    body: body,\n)",
+						Start: ast.Position{
+							Column: 7,
+							Line:   47,
+						},
+					},
+				},
+				Body: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   52,
+								},
+								File:   "http.flux",
+								Source: "url: url,\n    method: \"GET\",\n    headers: headers,\n    config: config,\n    body: body",
+								Start: ast.Position{
+									Column: 5,
+									Line:   48,
+								},
+							},
+						},
+						Lbrace: nil,
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 13,
+										Line:   48,
+									},
+									File:   "http.flux",
+									Source: "url: url",
+									Start: ast.Position{
+										Column: 5,
+										Line:   48,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   48,
+										},
+										File:   "http.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 5,
+											Line:   48,
+										},
+									},
+								},
+								Name: "url",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   48,
+										},
+										File:   "http.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 10,
+											Line:   48,
+										},
+									},
+								},
+								Name: "url",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   49,
+									},
+									File:   "http.flux",
+									Source: "method: \"GET\"",
+									Start: ast.Position{
+										Column: 5,
+										Line:   49,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   49,
+										},
+										File:   "http.flux",
+										Source: "method",
+										Start: ast.Position{
+											Column: 5,
+											Line:   49,
+										},
+									},
+								},
+								Name: "method",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   49,
+										},
+										File:   "http.flux",
+										Source: "\"GET\"",
+										Start: ast.Position{
+											Column: 13,
+											Line:   49,
+										},
+									},
+								},
+								Value: "GET",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   50,
+									},
+									File:   "http.flux",
+									Source: "headers: headers",
+									Start: ast.Position{
+										Column: 5,
+										Line:   50,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 12,
+											Line:   50,
+										},
+										File:   "http.flux",
+										Source: "headers",
+										Start: ast.Position{
+											Column: 5,
+											Line:   50,
+										},
+									},
+								},
+								Name: "headers",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   50,
+										},
+										File:   "http.flux",
+										Source: "headers",
+										Start: ast.Position{
+											Column: 14,
+											Line:   50,
+										},
+									},
+								},
+								Name: "headers",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 19,
+										Line:   51,
+									},
+									File:   "http.flux",
+									Source: "config: config",
+									Start: ast.Position{
+										Column: 5,
+										Line:   51,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   51,
+										},
+										File:   "http.flux",
+										Source: "config",
+										Start: ast.Position{
+											Column: 5,
+											Line:   51,
+										},
+									},
+								},
+								Name: "config",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   51,
+										},
+										File:   "http.flux",
+										Source: "config",
+										Start: ast.Position{
+											Column: 13,
+											Line:   51,
+										},
+									},
+								},
+								Name: "config",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   52,
+									},
+									File:   "http.flux",
+									Source: "body: body",
+									Start: ast.Position{
+										Column: 5,
+										Line:   52,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 9,
+											Line:   52,
+										},
+										File:   "http.flux",
+										Source: "body",
+										Start: ast.Position{
+											Column: 5,
+											Line:   52,
+										},
+									},
+								},
+								Name: "body",
+							},
+							Separator: nil,
+							Value: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   52,
+										},
+										File:   "http.flux",
+										Source: "body",
+										Start: ast.Position{
+											Column: 11,
+											Line:   52,
+										},
+									},
+								},
+								Name: "body",
+							},
+						}},
+						Rbrace: nil,
+						With:   nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   53,
+							},
+							File:   "http.flux",
+							Source: "request(\n    url: url,\n    method: \"GET\",\n    headers: headers,\n    config: config,\n    body: body,\n)",
+							Start: ast.Position{
+								Column: 68,
+								Line:   47,
+							},
+						},
+					},
+					Callee: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 75,
+									Line:   47,
+								},
+								File:   "http.flux",
+								Source: "request",
+								Start: ast.Position{
+									Column: 68,
+									Line:   47,
+								},
+							},
+						},
+						Name: "request",
+					},
+					Lparen: nil,
+					Rparen: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   47,
+							},
+							File:   "http.flux",
+							Source: "url",
+							Start: ast.Position{
+								Column: 8,
+								Line:   47,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 11,
+									Line:   47,
+								},
+								File:   "http.flux",
+								Source: "url",
+								Start: ast.Position{
+									Column: 8,
+									Line:   47,
+								},
+							},
+						},
+						Name: "url",
+					},
+					Separator: nil,
+					Value:     nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   47,
+							},
+							File:   "http.flux",
+							Source: "headers=[:]",
+							Start: ast.Position{
+								Column: 13,
+								Line:   47,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   47,
+								},
+								File:   "http.flux",
+								Source: "headers",
+								Start: ast.Position{
+									Column: 13,
+									Line:   47,
+								},
+							},
+						},
+						Name: "headers",
+					},
+					Separator: nil,
+					Value: &ast.DictExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   47,
+								},
+								File:   "http.flux",
+								Source: "[:]",
+								Start: ast.Position{
+									Column: 21,
+									Line:   47,
+								},
+							},
+						},
+						Elements: []*ast.DictItem{},
+						Lbrack:   nil,
+						Rbrack:   nil,
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 46,
+								Line:   47,
+							},
+							File:   "http.flux",
+							Source: "config=defaultConfig",
+							Start: ast.Position{
+								Column: 26,
+								Line:   47,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   47,
+								},
+								File:   "http.flux",
+								Source: "config",
+								Start: ast.Position{
+									Column: 26,
+									Line:   47,
+								},
+							},
+						},
+						Name: "config",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   47,
+								},
+								File:   "http.flux",
+								Source: "defaultConfig",
+								Start: ast.Position{
+									Column: 33,
+									Line:   47,
+								},
+							},
+						},
+						Name: "defaultConfig",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 63,
+								Line:   47,
+							},
+							File:   "http.flux",
+							Source: "body=_emptyBody",
+							Start: ast.Position{
+								Column: 48,
+								Line:   47,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 52,
+									Line:   47,
+								},
+								File:   "http.flux",
+								Source: "body",
+								Start: ast.Position{
+									Column: 48,
+									Line:   47,
+								},
+							},
+						},
+						Name: "body",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 63,
+									Line:   47,
+								},
+								File:   "http.flux",
+								Source: "_emptyBody",
+								Start: ast.Position{
+									Column: 53,
+									Line:   47,
+								},
+							},
+						},
+						Name: "_emptyBody",
+					},
+				}},
+				Rparan: nil,
 			},
 		}},
 		Eof:      nil,
