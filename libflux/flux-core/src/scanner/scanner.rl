@@ -46,7 +46,9 @@ use crate::scanner::*;
     escaped_char = "\\" ( "n" | "r" | "t" | "\\" | '"' | "${" );
     unicode_value = (any_count_line - [\\$]) | escaped_char;
     byte_value = "\\x" xdigit{2};
-    dollar_value = "$" ( any_count_line - "{" );
+    # when the dollar is in the last position before the closing quotes
+    # we need to match the quote char but not consume it.
+    dollar_value = "$" ( any_count_line - [{"] | "\"" %{ fhold; } );
     string_lit_char = ( unicode_value | byte_value | dollar_value );
     string_lit = '"' string_lit_char* "$"? :> '"';
 
