@@ -789,13 +789,13 @@ func TestPivot_Process(t *testing.T) {
 func TestPivot2_Process(t *testing.T) {
 	testCases := []struct {
 		name string
-		spec *universe.PivotProcedureSpec
+		spec *universe.SortedPivotProcedureSpec
 		data []flux.Table
 		want []*executetest.Table
 	}{
 		{
 			name: "_field flatten case one measurement",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -846,7 +846,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "_field flatten case two measurements",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -936,7 +936,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "_field flatten case two measurements different value type",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1026,7 +1026,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "dropping a column not in rowKey or groupKey",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1079,7 +1079,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "group key doesn't change",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1133,7 +1133,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "group key loses a member",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1211,7 +1211,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "group key loses all members. drops _value",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "grouper",
@@ -1276,7 +1276,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "_field flatten case one table with nulls",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1354,13 +1354,7 @@ func TestPivot2_Process(t *testing.T) {
 				nil,
 				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 					spec := *tc.spec
-					spec.IsKeyColumnFunc = func(label string) bool {
-						return true
-					}
-					spec.IsSortedByFunc = func(cols []string, desc bool) bool {
-						return true
-					}
-					tr, d, err := universe.NewPivotTransformation2(context.Background(), spec, id, alloc)
+					tr, d, err := universe.NewSortedPivotTransformation(context.Background(), spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -1371,20 +1365,14 @@ func TestPivot2_Process(t *testing.T) {
 }
 
 func TestPivot2_Process_VariousSchemas(t *testing.T) {
-	spec := universe.PivotProcedureSpec{
+	spec := universe.SortedPivotProcedureSpec{
 		RowKey:      []string{"_time"},
 		ColumnKey:   []string{"_field"},
 		ValueColumn: "_value",
-		IsKeyColumnFunc: func(label string) bool {
-			return true
-		},
-		IsSortedByFunc: func(cols []string, desc bool) bool {
-			return true
-		},
 	}
 	mem := &memory.Allocator{}
 	id := executetest.RandomDatasetID()
-	tr, d, err := universe.NewPivotTransformation2(context.Background(), spec, id, mem)
+	tr, d, err := universe.NewSortedPivotTransformation(context.Background(), spec, id, mem)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1435,16 +1423,10 @@ func BenchmarkPivot(b *testing.B) {
 
 func benchmarkPivot(b *testing.B, n int) {
 	b.ReportAllocs()
-	spec := &universe.PivotProcedureSpec{
+	spec := &universe.SortedPivotProcedureSpec{
 		RowKey:      []string{execute.DefaultTimeColLabel},
 		ColumnKey:   []string{"_field"},
 		ValueColumn: execute.DefaultValueColLabel,
-		IsSortedByFunc: func(cols []string, desc bool) bool {
-			return true
-		},
-		IsKeyColumnFunc: func(label string) bool {
-			return true
-		},
 	}
 	executetest.ProcessBenchmarkHelper(b,
 		func(alloc *memory.Allocator) (flux.TableIterator, error) {
@@ -1464,7 +1446,7 @@ func benchmarkPivot(b *testing.B, n int) {
 			// cache := execute.NewTableBuilderCache(alloc)
 			// d := execute.NewDataset(id, execute.DiscardingMode, cache)
 			// t := NewPivotTransformation(d, cache, spec)
-			t, d, err := universe.NewPivotTransformation2(context.Background(), *spec, id, alloc)
+			t, d, err := universe.NewSortedPivotTransformation(context.Background(), *spec, id, alloc)
 			if err != nil {
 				b.Fatal(err)
 			}

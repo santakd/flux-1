@@ -168,11 +168,6 @@ func createPivotTransformation(id execute.DatasetID, mode execute.AccumulationMo
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
 
-	// Attempt to use the new pivot transformation if it is implemented for our inputs.
-	if t, d, err := newPivotTransformation2(a.Context(), *s, id, a.Allocator()); err == nil || flux.ErrorCode(err) != codes.Unimplemented {
-		return t, d, err
-	}
-
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 	t := NewPivotTransformation(d, cache, s)
@@ -424,34 +419,47 @@ func (t *pivotTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-// pivotTransformation2 is an optimized version of pivot.
+type SortedPivotProcedureSpec struct {
+	plan.DefaultCost
+	RowKey      []string
+	ColumnKey   []string
+	ValueColumn string
+}
+
+func (s *SortedPivotProcedureSpec) Kind() plan.ProcedureKind {
+	return PivotKind
+}
+func (s *SortedPivotProcedureSpec) Copy() plan.ProcedureSpec {
+	ns := new(SortedPivotProcedureSpec)
+	ns.RowKey = make([]string, len(s.RowKey))
+	copy(ns.RowKey, s.RowKey)
+	ns.ColumnKey = make([]string, len(s.ColumnKey))
+	copy(ns.ColumnKey, s.ColumnKey)
+	ns.ValueColumn = s.ValueColumn
+	return ns
+}
+
+// sortedPivotTransformation is an optimized version of pivot.
 // It can only be used when there is a single row and column key
 // and it can only be used if the row key is sorted without
 // null values.
-type pivotTransformation2 struct {
+type sortedPivotTransformation struct {
 	execute.ExecutionNode
 	d      *execute.PassthroughDataset
 	ctx    context.Context
 	alloc  *memory.Allocator
-	spec   PivotProcedureSpec
+	spec   SortedPivotProcedureSpec
 	groups *execute.GroupLookup
 
 	watermark  execute.Time
 	processing execute.Time
+
+	tableKey   values.Value
+	tableGroup *pivotTableGroup
 }
 
-func newPivotTransformation2(ctx context.Context, spec PivotProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	if len(spec.RowKey) != 1 {
-		return nil, nil, errors.New(codes.Unimplemented, "only pivots with 1 row key are implemented")
-	} else if !spec.isSortedBy(spec.RowKey, false) {
-		return nil, nil, errors.New(codes.Unimplemented, "input must be sorted by the row key")
-	}
-	if len(spec.ColumnKey) != 1 {
-		return nil, nil, errors.New(codes.Unimplemented, "only pivots with 1 column key are implemented")
-	} else if !spec.isKeyColumn(spec.ColumnKey[0]) {
-		return nil, nil, errors.New(codes.Unimplemented, "column key must be part of the group key")
-	}
-	t := &pivotTransformation2{
+func newSortedPivotTransformation(ctx context.Context, spec SortedPivotProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	t := &sortedPivotTransformation{
 		d:      execute.NewPassthroughDataset(id),
 		ctx:    ctx,
 		alloc:  alloc,
@@ -461,11 +469,11 @@ func newPivotTransformation2(ctx context.Context, spec PivotProcedureSpec, id ex
 	return t, t.d, nil
 }
 
-func (t *pivotTransformation2) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
+func (t *sortedPivotTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
 	return t.d.RetractTable(key)
 }
 
-func (t *pivotTransformation2) Process(id execute.DatasetID, tbl flux.Table) error {
+func (t *sortedPivotTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Validate that the table has all of the requisite columns.
 	if err := t.validateTable(tbl); err != nil {
 		return err
@@ -477,7 +485,7 @@ func (t *pivotTransformation2) Process(id execute.DatasetID, tbl flux.Table) err
 	// This can be calculated in advance because pivot will never
 	// add columns to the group key so it is safe to compute without
 	// the other tables.
-	key := t.computeGroupKey(tbl.Key())
+	newKey := t.computeGroupKey(tbl.Key())
 
 	// Determine the indices of everything.
 	rowIndex := execute.ColIdx(t.spec.RowKey[0], tbl.Cols())
@@ -485,29 +493,48 @@ func (t *pivotTransformation2) Process(id execute.DatasetID, tbl flux.Table) err
 	valueIndex := execute.ColIdx(t.spec.ValueColumn, tbl.Cols())
 	valueType := tbl.Cols()[valueIndex].Type
 
-	// Find or create a group of pivot table buffers.
-	// These are organized by the column name.
-	gr := t.groups.LookupOrCreate(key, func() interface{} {
-		return &pivotTableGroup{
-			rowCol: flux.ColMeta{
-				Label: t.spec.RowKey[0],
-				Type:  rowType,
-			},
-			buffers: make(map[string]*pivotTableBuffer),
-		}
-	}).(*pivotTableGroup)
+	// first tableGroup
+	if t.tableKey == nil {
+		// Find or create the first pivot table buffers.
+		t.tableGroup = t.groups.LookupOrCreate(newKey, func() interface{} {
+			return &pivotTableGroup{
+				rowCol: flux.ColMeta{
+					Label: t.spec.RowKey[0],
+					Type:  rowType,
+				},
+				buffers: make(map[string]*pivotTableBuffer),
+			}
+		}).(*pivotTableGroup)
+	}
+
+	t.tableKey = newKey.LabelValue(t.spec.ColumnKey[0])
 
 	// Read the table and insert each of the column readers
 	// into the table group.
 	return tbl.Do(func(cr flux.ColReader) error {
 		colKey := t.spec.ColumnKey[0]
 		key := cr.Key().LabelValue(colKey)
+
+		if key != t.tableKey {
+			// pivot the current table buffers
+			t.groups.Range(func(key flux.GroupKey, value interface{}) {
+			tbl, err := t.tableGroup.doPivot(key, t.alloc)
+			if err != nil {
+				return
+			}
+			if err = t.d.Process(tbl); err != nil {
+				return
+			}
+			})
+			t.groups.Clear()
+		}
+
 		if key == nil {
 			// The column key is not part of the group key
 			// so it does not have a consistent value.
 			// This is possible for us to do, but it requires
 			// regrouping the input and that is not implemented yet.
-			return errors.New(codes.Unimplemented, "column keys that are not part of the group key are not supported yet")
+			return errors.New(codes.Unimplemented, "column keys that are not part of the group newKey are not supported yet")
 		}
 
 		// The key must be a string.
@@ -517,10 +544,10 @@ func (t *pivotTransformation2) Process(id execute.DatasetID, tbl flux.Table) err
 		label := key.Str()
 
 		// Retrieve the buffer associated with this value.
-		buf, ok := gr.buffers[label]
+		buf, ok := t.tableGroup.buffers[label]
 		if !ok {
 			buf = &pivotTableBuffer{valueType: valueType}
-			gr.buffers[label] = buf
+			t.tableGroup.buffers[label] = buf
 		}
 
 		if buf.valueType != valueType {
@@ -531,11 +558,25 @@ func (t *pivotTransformation2) Process(id execute.DatasetID, tbl flux.Table) err
 		// key and the value column into the buffer.
 		k, v := t.getColumn(cr, rowIndex), t.getColumn(cr, valueIndex)
 		buf.Insert(k, v)
+
+		// update tableGroup
+		t.tableGroup = t.groups.LookupOrCreate(newKey, func() interface{} {
+			return &pivotTableGroup{
+				rowCol: flux.ColMeta{
+					Label: t.spec.RowKey[0],
+					Type:  rowType,
+				},
+				buffers: make(map[string]*pivotTableBuffer),
+			}
+		}).(*pivotTableGroup)
+
+
 		return nil
 	})
+
 }
 
-func (t *pivotTransformation2) validateTable(tbl flux.Table) error {
+func (t *sortedPivotTransformation) validateTable(tbl flux.Table) error {
 	if missingColumn, ok := func() (string, bool) {
 		for _, v := range t.spec.RowKey {
 			if idx := execute.ColIdx(v, tbl.Cols()); idx < 0 {
@@ -562,7 +603,7 @@ func (t *pivotTransformation2) validateTable(tbl flux.Table) error {
 // computeGroupKey will compute the group key for a table with a given key.
 // This is constructed by removing any columns within the column key
 // or the value column.
-func (t *pivotTransformation2) computeGroupKey(key flux.GroupKey) flux.GroupKey {
+func (t *sortedPivotTransformation) computeGroupKey(key flux.GroupKey) flux.GroupKey {
 	// TODO(jsternberg): This can be optimized further when we
 	// refactor the group key implementation so it is more composable.
 	// https://github.com/influxdata/flux/issues/1032
@@ -583,7 +624,7 @@ func (t *pivotTransformation2) computeGroupKey(key flux.GroupKey) flux.GroupKey 
 	return execute.NewGroupKey(cols, vs)
 }
 
-func (t *pivotTransformation2) contains(v string, ss []string) bool {
+func (t *sortedPivotTransformation) contains(v string, ss []string) bool {
 	for _, s := range ss {
 		if s == v {
 			return true
@@ -592,7 +633,7 @@ func (t *pivotTransformation2) contains(v string, ss []string) bool {
 	return false
 }
 
-func (t *pivotTransformation2) getColumn(cr flux.ColReader, j int) array.Interface {
+func (t *sortedPivotTransformation) getColumn(cr flux.ColReader, j int) array.Interface {
 	switch col := cr.Cols()[j]; col.Type {
 	case flux.TInt:
 		return cr.Ints(j)
@@ -611,17 +652,17 @@ func (t *pivotTransformation2) getColumn(cr flux.ColReader, j int) array.Interfa
 	}
 }
 
-func (t *pivotTransformation2) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
+func (t *sortedPivotTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
 	t.watermark = mark
 	return nil
 }
 
-func (t *pivotTransformation2) UpdateProcessingTime(id execute.DatasetID, mark execute.Time) error {
+func (t *sortedPivotTransformation) UpdateProcessingTime(id execute.DatasetID, mark execute.Time) error {
 	t.processing = mark
 	return nil
 }
 
-func (t *pivotTransformation2) Finish(id execute.DatasetID, err error) {
+func (t *sortedPivotTransformation) Finish(id execute.DatasetID, err error) {
 	// Inform the downstream dataset that we are finished.
 	// Wrap this in a function so that we do not capture the err variable.
 	// https://play.golang.org/p/QXns3c8s76f
@@ -629,6 +670,7 @@ func (t *pivotTransformation2) Finish(id execute.DatasetID, err error) {
 
 	t.groups.Range(func(key flux.GroupKey, value interface{}) {
 		if err != nil {
+
 			return
 		}
 

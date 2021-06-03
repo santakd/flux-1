@@ -1,6 +1,5 @@
 package planner_test
 
-
 import "testing"
 import "planner"
 
